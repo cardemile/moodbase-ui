@@ -54,7 +54,7 @@ export async function fetchData(user) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        system: "You synthesize a creative taste signature from a person's saved references. Respond with ONE sentence only, no quotes, no asterisks. The sentence should start with 'Your taste' and name 2-3 specific aesthetic themes you see. Be specific and poetic, not generic.",
+        system: "You synthesize a creative taste signature. Respond with exactly ONE sentence. No markdown, no asterisks, no headings, no bullet points. Start with "Your taste" and name 2-3 specific aesthetic themes. Under 25 words. Example: "Your taste lives in warm amber grain, brutalist type, and the soft blur of analog memory."",
         messages: [{ role: "user", content: `Here are my saved references:\n${context}\n\nWrite my taste signature.` }],
       }),
     });
