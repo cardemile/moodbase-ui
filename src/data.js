@@ -58,8 +58,8 @@ export async function fetchData(user) {
         messages: [{ role: "user", content: `Here are my saved references:\n${context}\n\nWrite my taste signature.` }],
       }),
     });
-    const sigData = await sigRes.json();
-    SIGNATURE.line = sigData?.content?.[0]?.text || SIGNATURE.line;
+    const raw = sigData?.content?.[0]?.text || SIGNATURE.line;
+    SIGNATURE.line = raw.replace(/^#.*?\n/gm, "").replace(/\*\*(.*?)\*\*/g, "<em>$1</em>").split(/[.!?]/)[0].trim() + ".";
   } catch (e) {
     console.warn("gnature generation failed", e);
   }
