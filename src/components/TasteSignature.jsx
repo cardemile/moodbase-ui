@@ -10,10 +10,7 @@ export default function TasteSignature({ sig, onMotif, onAsk }) {
 
       {/* Static headline for the demo. In production, render your synthesized
           copy here; wrap emphasized phrases in <em> for the accent color. */}
-      <h2 className="mb-sig-line">
-        This month your taste leans into <em>sun-bleached analog warmth</em>,
-        handmade packaging, and the soft imperfection of <em>degraded film</em>.
-      </h2>
+      <h2 className="mb-sig-line" dangerouslySetInnerHTML={{ __html: sig.line }} />
 
       <div className="mb-sig-row">
         <div className="mb-sig-block">

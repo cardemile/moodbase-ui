@@ -48,5 +48,20 @@ export async function fetchData(user) {
     newThisWeek: saves.filter((s) => s.days <= 7).length,
   };
 
+  try {
+    const context = saves.slice(0, 40).map((s) => `"${s.title}" — ${s.dek} Tags: ${s.tags.join(", ")}`).join("\n");
+    const sigRes = await fetch("https://moodbase.vercel.app/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        system: "You synthesize a creative taste signature from a person's saved references. Respond with ONE sentence only, no quotes, no asterisks. The sentence should start with 'Your taste' and name 2-3 specific aesthetic themes you see. Be specific and poetic, not generic.",
+        messages: [{ role: "user", content: `Here are my saved references:\n${context}\n\nWrite my taste signature.` }],
+      }),
+    });
+    const sigData = await sigRes.json();
+    SIGNATURE.line = sigData?.content?.[0]?.text || SIGNATURE.line;
+  } catch (e) {
+    console.warn("gnature generation failed", e);
+  }
   return { projects, saves, tags, SIGNATURE };
 }
