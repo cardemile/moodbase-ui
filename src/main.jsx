@@ -40,7 +40,7 @@ function App() {
   if (!user) return (
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContt:"center", height:"100vh", background:"#14110D", color:"#F2EBDD", fontFamily:"sans-serif", gap:"16px" }}>
       <div style={{ fontSize:"28px", fontWeight:"700" }}>Moodbase</div>
-      <button onClick={() => supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: window.location.href } })}
+      <button onClick={() => supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: "https://moodbase-ui.vercel.app" } })}
         style={{ background:"#C8552A", color:"#fff", border:"none", padding:"12px 24px", borderRadius:"10px", fontSize:"15px", cursor:"pointer" }}>
         Sign in with Google
       </button>
