@@ -78,17 +78,42 @@ export default function Dashboard({ projects, tags, saves, signature }) {
     ? "All Saves"
     : (projects.find((p) => p.key === activeProj) || {}).name;
 
-  // PRODUCTION: replace the setTimeout/mockBrainReply with a fetch to your
-  // Claude endpoint, then append the streamed/returned reply.
-  function askBrain(text) {
+  async function askBrain(text) {
     const q = (text || "").trim();
     if (!q) return;
+
+    const history = messages
+      .filter((m) => m.role === "user" || m.role === "ai")
+      .map((m) => ({ role: m.role === "ai" ? "assistant" : "user", content: m.text }));
+
     setMessages((m) => [...m, { role: "user", text: q }]);
     setTyping(true);
-    setTimeout(() => {
+
+    const context = saves
+      .slice(0, 60)
+      .map((s) => `"${s.title}" — ${s.dek || ""} Tags: ${(s.tags || []).join(", ")} URL: ${s.source_url || ""}`)
+      .join("\n");
+
+    const systemPrompt = `You are a creative thinking partner with access to everything this person has saved in Moodbase. Help them find patterns, make creative decisions, and think through ideas.\n\nHere is their saved content:\n${context}`;
+
+    try {
+      const res = await fetch("https://moodbase.vercel.app/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system: systemPrompt,
+          messages: [...history, { role: "user", content: q }],
+        }),
+      });
+      const data = await res.json();
+      const reply = data?.content?.[0]?.text || "No response — try again.";
+      setMessages((m) => [...m, { role: "ai", text: reply }]);
+    } catch (err) {
+      console.error("askBrain error:", err);
+      setMessages((m) => [...m, { role: "ai", text: "Couldn't reach Moodbase. Check your connection." }]);
+    } finally {
       setTyping(false);
-      setMessages((m) => [...m, { role: "ai", text: mockBrainReply(q) }]);
-    }, 850 + Math.random() * 500);
+    }
   }
   const openChatAsk = (text) => { setChatOpen(true); setRailOpen(false); askBrain(text); };
 
