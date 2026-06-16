@@ -41,7 +41,7 @@ export default function ChatPanel({
           <div key={i} className={"mb-msg " + m.role}>
             {/* m.text may contain <em> emphasis. Sanitize model output before
                 using dangerouslySetInnerHTML in production. */}
-            <div className="bub" dangerouslySetInnerHTML={{ __html: m.text }} />
+            <div className="bub" dangerouslySetInnerHTML={{ __html: m.text.replace(/\*\*(.*)\*\*/g, "<strong>$1</strong>") }} />
           </div>
         ))}
         {typing && (
