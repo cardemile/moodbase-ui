@@ -34,7 +34,7 @@ export default function DetailOverlay({
             <span className="kicker">{save.cat}</span>
           </div>
           <h2 className="mb-modal-title">{save.title}</h2>
-          <p className="mb-modal-dek">{save.dek}</p>
+          <p className="mb-modal-dek">{save.content || save.dek}</p>
 
           <dl className="mb-modal-meta">
             <dt>Saved</dt><dd>{save.days} days ago</dd>
