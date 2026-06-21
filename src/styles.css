@@ -169,12 +169,13 @@ a { color: inherit; text-decoration: none; }
 
 /* ---- Sidebar ---- */
 .mb-rail {
+  font-family: var(--f-display);
   border-right: 1px solid var(--line); padding: 26px 18px 48px;
   overflow-y: auto; height: calc(100vh - 68px); position: sticky; top: 68px;
 }
 .mb-rail-sec + .mb-rail-sec { margin-top: 34px; }
 .mb-rail-h { display: flex; align-items: center; justify-content: space-between; padding: 0 10px 14px; }
-.mb-rail-clear { font-family: var(--f-ui); font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); }
+.mb-rail-clear { font-family: var(--f-display); font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); }
 .mb-rail-clear:hover { opacity: .75; }
 .mb-proj {
   display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
@@ -187,11 +188,11 @@ a { color: inherit; text-decoration: none; }
 .mb-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .mb-proj .nm { font-size: 14px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mb-proj.active .nm { font-weight: 600; }
-.mb-proj .ct { font-family: var(--f-ui); font-size: 11.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.mb-proj .ct { font-family: var(--f-display); font-size: 11.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
 .mb-newproj {
   margin-top: 12px; width: 100%; padding: 9px 10px; border-radius: 9px; text-align: left;
   display: flex; align-items: center; gap: 10px; white-space: nowrap;
-  color: var(--ink-3); font-family: var(--f-ui); font-size: 13px;
+  color: var(--ink-3); font-family: var(--f-display); font-size: 13px;
   transition: color .14s, background .14s;
 }
 .mb-newproj .ic { font-size: 15px; line-height: 1; }
@@ -199,13 +200,13 @@ a { color: inherit; text-decoration: none; }
 
 .mb-tags { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 6px; }
 .mb-tag {
-  font-family: var(--f-ui); font-size: 12px; padding: 4px 11px; border-radius: 999px;
+  font-family: var(--f-display); font-size: 12px; padding: 4px 11px; border-radius: 999px;
   border: 1px solid var(--line); color: var(--ink-2); background: transparent;
   white-space: nowrap; transition: all .14s;
 }
 .mb-tag:hover { border-color: var(--accent); color: var(--ink); }
 .mb-tag.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-.mb-tags-more { margin: 12px 6px 0; font-family: var(--f-ui); font-size: 12px; font-weight: 600; color: var(--ink-3); }
+.mb-tags-more { margin: 12px 6px 0; font-family: var(--f-display); font-size: 12px; font-weight: 600; color: var(--ink-3); }
 .mb-tags-more:hover { color: var(--accent); }
 
 /* ---- Main ---- */
@@ -439,3 +440,5 @@ a { color: inherit; text-decoration: none; }
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.mb-rail-h.kicker { font-family: var(--f-display); }
