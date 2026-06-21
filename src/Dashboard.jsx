@@ -18,7 +18,7 @@ const SEARCH_SUGGESTIONS = [
 const tokenize = (str) =>
   (str || "").toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2);
 
-export default function Dashboard({ projects, tags, saves, signature }) {
+export default function Dashboard({ projects, tags, saves, signature, userId }) {
   const [query, setQuery] = useState("");
   const [activeProj, setActiveProj] = useState("all");
   const [activeTags, setActiveTags] = useState([]);
@@ -103,6 +103,7 @@ export default function Dashboard({ projects, tags, saves, signature }) {
         body: JSON.stringify({
           system: systemPrompt,
           messages: [...history, { role: "user", content: q }],
+          userId,
         }),
       });
       const data = await res.json();

@@ -56,6 +56,7 @@ export async function fetchData(user) {
       body: JSON.stringify({
         system: "You synthesize a creative taste signature. Respond with exactly ONE sentence. No markdown, no asterisks, no headings. Start with 'Your taste' and name 2-3 specific aesthetic themes. Under 25 words.",
         messages: [{ role: "user", content: `Here are my saved references:\n${context}\n\nWrite my taste signature.` }],
+        userId: user.id,
       }),
     });
     const sigData = await sigRes.json();
