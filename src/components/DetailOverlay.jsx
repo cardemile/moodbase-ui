@@ -38,7 +38,7 @@ export default function DetailOverlay({
 
           <dl className="mb-modal-meta">
             <dt>Saved</dt><dd>{save.days} days ago</dd>
-            <dt>Source</dt><dd>{save.source}</dd>
+            <dt>Source</dt><dd>{save.sourceUrl ? <a href={save.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)" }}>{save.source} ↗</a> : save.source}</dd>
             <dt>Project</dt><dd>{proj ? proj.name : "Uncategorized"}</dd>
             <dt>Tags</dt><dd>{save.tags.join(" · ")}</dd>
           </dl>
