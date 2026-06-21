@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import Dashboard from "./Dashboard.jsx";
-import { supabase, fetchData } from "./data.js";
+import { supabase, fetchData, fetchSignature } from "./data.js";
 import "./styles.css";
 
 function App() {
@@ -28,17 +28,20 @@ function App() {
     fetchData(user).then((d) => {
       setData(d);
       setLoading(false);
+      // Signature loads in the background — page is already interactive.
+      fetchSignature(user, d.saves).then((line) => {
+        setData((prev) => prev ? { ...prev, SIGNATURE: { ...prev.SIGNATURE, line } } : prev);
+      });
     });
   }, [user]);
 
   if (loading) return (
     <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100vh", background:"#14110D", color:"#F2EBDD", fontFamily:"sans-serif" }}>
       Loading…
-    </div>
+  </div>
   );
-
   if (!user) return (
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContt:"center", height:"100vh", background:"#14110D", color:"#F2EBDD", fontFamily:"sans-serif", gap:"16px" }}>
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100vh", background:"#14110D", color:"#F2EBDD", fontFamily:"sans-serif", gap:"16px" }}>
       <div style={{ fontSize:"28px", fontWeight:"700" }}>Moodbase</div>
       <button onClick={() => supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: "https://moodbase-ui.vercel.app" } })}
         style={{ background:"#C8552A", color:"#fff", border:"none", padding:"12px 24px", borderRadius:"10px", fontSize:"15px", cursor:"pointer" }}>
@@ -46,7 +49,6 @@ function App() {
       </button>
     </div>
   );
-
   if (!data) return null;
 
   return (

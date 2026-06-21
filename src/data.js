@@ -48,6 +48,11 @@ export async function fetchData(user) {
     newThisWeek: saves.filter((s) => s.days <= 7).length,
   };
 
+  return { projects, saves, tags, SIGNATURE };
+}
+
+export async function fetchSignature(user, saves) {
+  const fallback = "Your taste is synthesized from your saved library.";
   try {
     const context = saves.slice(0, 40).map((s) => `"${s.title}" — ${s.dek} Tags: ${s.tags.join(", ")}`).join("\n");
     const sigRes = await fetch("https://moodbase.vercel.app/api/chat", {
@@ -60,13 +65,15 @@ export async function fetchData(user) {
       }),
     });
     const sigData = await sigRes.json();
-    const raw = sigData?.content?.[0]?.text || SIGNATURE.line;
-    SIGNATURE.line = raw.replace(/^#.*?\n/gm, "").replace(/\*\*(.*?)\*\*/g, "<em>$1</em>").split(/[.!?]/)[0].trim() + ".";
+    const raw = sigData?.content?.[0]?.text || fallback;
+    const stripped = raw.replace(/^#.*?\n/gm, "").replace(/\*\*(.*?)\*\*/g, "<em>$1</em>");
+    return stripped.split(/[.!?]/)[0].trim() + ".";
   } catch (e) {
-    console.warn("gnature generation failed", e);
+    console.warn("signature generation failed", e);
+    return fallback;
   }
-  return { projects, saves, tags, SIGNATURE };
 }
+
 
 export async function deleteItem(id) {
   const { error } = await supabase.from("items").delete().eq("id", id);
