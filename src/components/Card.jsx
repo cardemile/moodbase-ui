@@ -1,4 +1,5 @@
 // Card.jsx — a single save tile.
+import { useState } from "react";
 import Icon, { grad } from "./Icon.jsx";
 
 function catDot(projKey, projects) {
@@ -7,6 +8,8 @@ function catDot(projKey, projects) {
 }
 
 export default function Card({ s, dim, match, projects, onOpen, onSimilar }) {
+  const [hoverTitle, setHoverTitle] = useState(false);
+  const [hoverDek, setHoverDek] = useState(false);
   const cls = "mb-card"
     + (s.featured ? " feat" : "")
     + (dim ? " dim" : "")
@@ -40,8 +43,14 @@ export default function Card({ s, dim, match, projects, onOpen, onSimilar }) {
           <span className="kicker">{s.cat}</span>
           {s.featured && <span className="mb-card-featured">★ Featured</span>}
         </div>
-        <h3 className="mb-card-title">{s.title}</h3>
-        <p className="mb-card-dek">{s.dek}</p>
+        <h3 className="mb-card-title" onMouseEnter={() => setHoverTitle(true)} onMouseLeave={() => setHoverTitle(false)}>
+          {s.title}
+          {hoverTitle && <span className="mb-tooltip">{s.title}</span>}
+        </h3>
+        <p className="mb-card-dek" onMouseEnter={() => setHoverDek(true)} onMouseLeave={() => setHoverDek(false)}>
+          {s.dek}
+          {hoverDek && <span className="mb-tooltip">{s.dek}</span>}
+        </p>
         <div className="mb-card-tags">
           {s.tags.slice(0, 3).map((t) => <span key={t} className="mb-mini-tag">{t}</span>)}
         </div>
