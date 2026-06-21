@@ -67,3 +67,9 @@ export async function fetchData(user) {
   }
   return { projects, saves, tags, SIGNATURE };
 }
+
+export async function deleteItem(id) {
+  const { error } = await supabase.from("items").delete().eq("id", id);
+  if (error) throw error;
+  return true;
+}

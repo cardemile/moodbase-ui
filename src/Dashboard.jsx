@@ -8,7 +8,7 @@ import Toolbar from "./components/Toolbar.jsx";
 import Grid from "./components/Grid.jsx";
 import ChatPanel from "./components/ChatPanel.jsx";
 import DetailOverlay from "./components/DetailOverlay.jsx";
-import { mockBrainReply } from "./mockBrain.js"; // <- swap for your API in production
+import { deleteItem } from "./data.js";
 
 const SEARCH_SUGGESTIONS = [
   "warm analog packaging", "nostalgic film grain", "golden hour interiors",
@@ -19,6 +19,7 @@ const tokenize = (str) =>
   (str || "").toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2);
 
 export default function Dashboard({ projects, tags, saves, signature, userId }) {
+  const [localSaves, setLocalSaves] = useState(saves);
   const [query, setQuery] = useState("");
   const [activeProj, setActiveProj] = useState("all");
   const [activeTags, setActiveTags] = useState([]);
@@ -35,9 +36,9 @@ export default function Dashboard({ projects, tags, saves, signature, userId }) 
 
   const counts = useMemo(() => {
     const byProj = {};
-    saves.forEach((s) => { byProj[s.project] = (byProj[s.project] || 0) + 1; });
-    return { total: saves.length, byProj };
-  }, [saves]);
+    localSaves.forEach((s) => { byProj[s.project] = (byProj[s.project] || 0) + 1; });
+    return { total: localSaves.length, byProj };
+  }, [localSaves]);
 
   const toggleTag = (tag) =>
     setActiveTags((a) => (a.includes(tag) ? a.filter((x) => x !== tag) : [...a, tag]));
@@ -46,7 +47,7 @@ export default function Dashboard({ projects, tags, saves, signature, userId }) 
   // Filtering + lightweight keyword "semantic" match.
   // PRODUCTION: replace the `if (query.trim())` block with your pgvector query.
   const { list, matchIds, filtered, shown } = useMemo(() => {
-    let l = saves.filter((s) =>
+    let l = localSaves.filter((s) =>
       (activeProj === "all" || s.project === activeProj) &&
       (activeTags.length === 0 || s.tags.some((tg) => activeTags.includes(tg))));
 
@@ -72,7 +73,7 @@ export default function Dashboard({ projects, tags, saves, signature, userId }) 
     const isFiltered = !!query.trim() || activeProj !== "all" || activeTags.length > 0;
     const shownN = query.trim() ? mIds.size : l.length;
     return { list: l, matchIds: mIds, filtered: isFiltered, shown: shownN };
-  }, [saves, activeProj, activeTags, sort, query]);
+  }, [localSaves, activeProj, activeTags, sort, query]);
 
   const title = activeProj === "all"
     ? "All Saves"
@@ -89,7 +90,7 @@ export default function Dashboard({ projects, tags, saves, signature, userId }) 
     setMessages((m) => [...m, { role: "user", text: q }]);
     setTyping(true);
 
-    const context = saves
+    const context = localSaves
       .slice(0, 60)
       .map((s) => `"${s.title}" — ${s.dek || ""} Tags: ${(s.tags || []).join(", ")} URL: ${s.source_url || ""}`)
       .join("\n");
@@ -124,7 +125,17 @@ export default function Dashboard({ projects, tags, saves, signature, userId }) 
     setDetail(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-
+  async function handleDelete(s) {
+    if (!window.confirm(`Delete "${s.title}"? This cannot be undone.`)) return;
+    try {
+      await deleteItem(s.id);
+      setLocalSaves((prev) => prev.filter((x) => x.id !== s.id));
+      setDetail(null);
+    } catch (err) {
+      console.error("delete failed", err);
+      alert("Could not delete this save. Try again.");
+    }
+  }
   // Dock the chat as a real grid column on wide screens; overlay on narrow.
   const docked = chatOpen && typeof window !== "undefined" && window.innerWidth > 1180;
 
@@ -148,7 +159,7 @@ export default function Dashboard({ projects, tags, saves, signature, userId }) 
           <TasteSignature sig={signature} onMotif={setQuery}
             onAsk={() => openChatAsk("Build a creative direction from my taste signature")} />
           <Toolbar
-            title={title} total={activeProj === "all" ? saves.length : list.length} shown={shown}
+            title={title} total={activeProj === "all" ? localSaves.length : list.length} shown={shown}
             filtered={filtered} onClear={clearAll}
             sort={sort} setSort={setSort} view={view} setView={setView} />
           <Grid
@@ -163,7 +174,7 @@ export default function Dashboard({ projects, tags, saves, signature, userId }) 
 
       {detail && (
         <DetailOverlay
-          save={detail} all={saves} projects={projects}
+          save={detail} all={localSaves} projects={projects} onDelete={handleDelete}
           onClose={() => setDetail(null)} onSimilar={findSimilar} onOpen={setDetail}
           onAsk={(s) => { setDetail(null); openChatAsk(`What does "${s.title}" say about my taste?`); }} />
       )}

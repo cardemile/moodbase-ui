@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import Icon, { grad } from "./Icon.jsx";
 
 export default function DetailOverlay({
-  save, all, projects, onClose, onSimilar, onAsk, onOpen,
+  save, all, projects, onClose, onSimilar, onAsk, onOpen, onDelete,
 }) {
   useEffect(() => {
     function k(e) { if (e.key === "Escape") onClose(); }
@@ -52,6 +52,7 @@ export default function DetailOverlay({
               <Icon name="spark" size={15} fill="currentColor" /> Ask about this
             </button>
             <button className="mb-mact"><Icon name="plus" size={15} /> Add to project</button>
+            <button className="mb-mact danger" onClick={() => onDelete(save)}><Icon name="x" size={15} /> Delete</button>
           </div>
 
           <div className="mb-related">
