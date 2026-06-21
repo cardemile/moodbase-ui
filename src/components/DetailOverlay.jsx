@@ -1,10 +1,11 @@
 // DetailOverlay.jsx — fullscreen save detail modal (Esc / backdrop to close).
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Icon, { grad } from "./Icon.jsx";
 
 export default function DetailOverlay({
-  save, all, projects, onClose, onSimilar, onAsk, onOpen, onDelete,
+  save, all, projects, onClose, onSimilar, onAsk, onOpen, onDelete, onMoveProject,
 }) {
+  const [showProjectPicker, setShowProjectPicker] = useState(false);
   useEffect(() => {
     function k(e) { if (e.key === "Escape") onClose(); }
     document.addEventListener("keydown", k);
@@ -50,7 +51,34 @@ export default function DetailOverlay({
             <button className="mb-mact" onClick={() => onAsk(save)}>
               <Icon name="spark" size={15} fill="currentColor" /> Ask about this
             </button>
-            <button className="mb-mact"><Icon name="plus" size={15} /> Add to project</button>
+            <div style={{ position: "relative" }}>
+              <button className="mb-mact" onClick={() => setShowProjectPicker((v) => !v)}>
+                <Icon name="plus" size={15} /> Add to project
+              </button>
+              {showProjectPicker && (
+                <div style={{
+                  position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 60,
+                  background: "var(--bg-2)", border: "1px solid var(--line)", borderRadius: "10px",
+                  padding: "6px", minWidth: "180px", boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+                }}>
+                  {(projects || []).filter((p) => p.key !== "all").map((p) => (
+                    <button
+                      key={p.key}
+                      onClick={() => { onMoveProject(save, p.key); setShowProjectPicker(false); }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: "8px", width: "100%",
+                        padding: "8px 10px", borderRadius: "7px", textAlign: "left",
+                        background: save.project === p.key ? "var(--hover)" : "transparent",
+                        color: "var(--ink)", fontSize: "13px",
+                      }}
+                    >
+                      <span style={{ width: 7, height: 7, borderRadius: "50%", background: p.dot, flexShrink: 0 }} />
+                      {p.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <button className="mb-mact danger" onClick={() => onDelete(save)}><Icon name="x" size={15} /> Delete</button>
           </div>
 

@@ -80,3 +80,9 @@ export async function deleteItem(id) {
   if (error) throw error;
   return true;
 }
+
+export async function updateItemProject(id, projectId) {
+  const { error } = await supabase.from("items").update({ project_id: projectId }).eq("id", id);
+  if (error) throw error;
+  return true;
+}

@@ -8,7 +8,7 @@ import Toolbar from "./components/Toolbar.jsx";
 import Grid from "./components/Grid.jsx";
 import ChatPanel from "./components/ChatPanel.jsx";
 import DetailOverlay from "./components/DetailOverlay.jsx";
-import { deleteItem } from "./data.js";
+import { deleteItem, updateItemProject } from "./data.js";
 
 const SEARCH_SUGGESTIONS = [
   "warm analog packaging", "nostalgic film grain", "golden hour interiors",
@@ -136,6 +136,17 @@ export default function Dashboard({ projects, tags, saves, signature, userId }) 
       alert("Could not delete this save. Try again.");
     }
   }
+  async function handleMoveProject(save, projectKey) {
+    const newProjectId = projectKey === "uncat" ? null : projectKey;
+    try {
+      await updateItemProject(save.id, newProjectId);
+      setLocalSaves((prev) => prev.map((x) => x.id === save.id ? { ...x, project: projectKey } : x));
+      setDetail((prev) => prev && prev.id === save.id ? { ...prev, project: projectKey } : prev);
+    } catch (err) {
+      console.error("move project failed", err);
+      alert("Could not move this save. Try again.");
+    }
+  }
   // Dock the chat as a real grid column on wide screens; overlay on narrow.
   const docked = chatOpen && typeof window !== "undefined" && window.innerWidth > 1180;
 
@@ -174,7 +185,7 @@ export default function Dashboard({ projects, tags, saves, signature, userId }) 
 
       {detail && (
         <DetailOverlay
-          save={detail} all={localSaves} projects={projects} onDelete={handleDelete}
+          save={detail} all={localSaves} projects={projects} onDelete={handleDelete} onMoveProject={handleMoveProject}
           onClose={() => setDetail(null)} onSimilar={findSimilar} onOpen={setDetail}
           onAsk={(s) => { setDetail(null); openChatAsk(`What does "${s.title}" say about my taste?`); }} />
       )}
