@@ -23,7 +23,23 @@ export default function DetailOverlay({
     <div className="mb-overlay" onClick={onClose}>
       <div className="mb-modal" onClick={(e) => e.stopPropagation()}>
         <div className="mb-modal-img">
-          {save.imageUrl ? <img src={save.imageUrl} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display="none"}} /> : <div className="mb-card-grad" style={grad(save.grad)} />}
+          {save.videoUrl ? (
+            <video
+              src={save.videoUrl}
+              poster={save.posterUrl || undefined}
+              autoPlay
+              muted
+              loop
+              playsInline
+              controls
+              style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}
+              onError={(e)=>{e.target.style.display="none"}}
+            />
+          ) : save.imageUrl ? (
+            <img src={save.imageUrl} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display="none"}} />
+          ) : (
+            <div className="mb-card-grad" style={grad(save.grad)} />
+          )}
           <span className="mb-card-src">{save.source}</span>
           <button className="mb-modal-close" onClick={onClose}><Icon name="x" size={17} /></button>
         </div>

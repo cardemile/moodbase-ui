@@ -1,5 +1,5 @@
 // Card.jsx — a single save tile.
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Icon, { grad } from "./Icon.jsx";
 
 function catDot(projKey, projects) {
@@ -10,6 +10,9 @@ function catDot(projKey, projects) {
 export default function Card({ s, dim, match, projects, onOpen, onSimilar }) {
   const [hoverTitle, setHoverTitle] = useState(false);
   const [hoverDek, setHoverDek] = useState(false);
+  const videoRef = useRef(null);
+  const playVideo = () => { if (videoRef.current) { videoRef.current.currentTime = 0; videoRef.current.play().catch(() => {}); } };
+  const pauseVideo = () => { if (videoRef.current) videoRef.current.pause(); };
   const cls = "mb-card"
     + (s.featured ? " feat" : "")
     + (dim ? " dim" : "")
@@ -20,7 +23,25 @@ export default function Card({ s, dim, match, projects, onOpen, onSimilar }) {
       <div className={"mb-card-img " + s.aspect}>
         {/* PLACEHOLDER ART. In production replace with:
             <img src={s.imageUrl} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}} /> */}
-        {s.imageUrl ? <img src={s.imageUrl} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display="none"}} /> : <div className="mb-card-grad" style={grad(s.grad)} />}
+        {s.videoUrl ? (
+          <video
+            ref={videoRef}
+            src={s.videoUrl}
+            poster={s.posterUrl || undefined}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            onMouseEnter={playVideo}
+            onMouseLeave={pauseVideo}
+            style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}
+            onError={(e)=>{e.target.style.display="none"}}
+          />
+        ) : s.imageUrl ? (
+          <img src={s.imageUrl} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display="none"}} />
+        ) : (
+          <div className="mb-card-grad" style={grad(s.grad)} />
+        )}
         {match && <span className="mb-match-badge">match</span>}
         <span className="mb-card-src">{s.source}</span>
         <div className="mb-card-actions">
