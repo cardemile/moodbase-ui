@@ -1,5 +1,5 @@
 // Card.jsx — a single save tile.
-import { useState, useRef } from "react";
+import { useState, useRef, memo } from "react";
 import Icon, { grad } from "./Icon.jsx";
 
 function catDot(projKey, projects) {
@@ -7,7 +7,7 @@ function catDot(projKey, projects) {
   return p ? p.dot : "var(--accent)";
 }
 
-export default function Card({ s, dim, match, projects, onOpen, onSimilar }) {
+function Card({ s, dim, match, projects, onOpen, onSimilar }) {
   const [hoverTitle, setHoverTitle] = useState(false);
   const [hoverDek, setHoverDek] = useState(false);
   const videoRef = useRef(null);
@@ -38,7 +38,7 @@ export default function Card({ s, dim, match, projects, onOpen, onSimilar }) {
             onError={(e)=>{e.target.style.display="none"}}
           />
         ) : s.imageUrl ? (
-          <img src={s.imageUrl} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display="none"}} />
+          <img src={s.imageUrl} alt="" loading="lazy" decoding="async" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display="none"}} />
         ) : (
           <div className="mb-card-grad" style={grad(s.grad)} />
         )}
@@ -82,3 +82,5 @@ export default function Card({ s, dim, match, projects, onOpen, onSimilar }) {
     </article>
   );
 }
+
+export default memo(Card);
