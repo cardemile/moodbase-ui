@@ -1,14 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
-
 const SUPABASE_URL = "https://qxgsaqvulfafqqxrkyob.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4Z3NhcXZ1bGZhZnFxeHJreW9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NDY5MzUsImV4cCI6MjA5MTIyMjkzNX0.ScmKdK5dI8xBv-35r0Zx0GwqyCVWT9MsqnIKlM7GGWg";
-
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export async function fetchData(user) {
-  const [{ data: itemsRaw }, { data: projectsRaw }] = await Promise.all([
+  const [{ data: itemsRaw }, { data: projectsRaw }, { data: linksRaw }] = await Promise.all([
     supabase.from("items").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
     supabase.from("projects").select("*").eq("user_id", user.id).order("created_at", { ascending: true }),
+    supabase.from("item_projects").select("item_id, project_id").eq("user_id", user.id),
   ]);
 
   const projects = [
@@ -21,28 +20,46 @@ export async function fetchData(user) {
     { key: "uncat", name: "Uncategorized", dot: "#9A8F82" },
   ];
 
-  const saves = (itemsRaw || []).map((item) => ({
-    id: item.id,
-    project: item.project_id || "uncat",
-    cat: projectsRaw?.find((p) => p.id === item.project_id)?.name || "Uncategorized",
-    title: item.title || "Untitled",
-    dek: item.summary || "",
-    tags: item.tags || [],
-    source: item.url ? (() => { try { return new URL(item.url).hostname.replace("www.", ""); } catch { return ""; } })() : "",
-    days: Math.floor((Date.now() - new Date(item.created_at).getTime()) / 86400000),
-    aspect: "tall",
-    imageUrl: item.type === "image" ? item.url : (item.type === "video" ? (item.poster_url || null) : null),
-    videoUrl: item.type === "video" ? item.url : null,
-    posterUrl: item.poster_url || null,
-    sourceUrl: item.source_url || item.url,
-    grad: ["#2A2438", "#C86A3E"],
-    vibe: (item.tags || []).join(" ") + " " + (item.summary || ""),
-    type: item.type,
-    content: item.content,
-  }));
+  const linksByItem = {};
+  (linksRaw || []).forEach((l) => {
+    if (!linksByItem[l.item_id]) linksByItem[l.item_id] = [];
+    linksByItem[l.item_id].push(l.project_id);
+  });
+
+  const saves = (itemsRaw || []).map((item) => {
+    const projectIds = linksByItem[item.id] || [];
+    const projectKeys = projectIds.length ? projectIds : ["uncat"];
+    const projectNames = projectIds
+      .map((pid) => projectsRaw?.find((p) => p.id === pid)?.name)
+      .filter(Boolean);
+    const cat = projectNames.length === 0
+      ? "Uncategorized"
+      : projectNames.length === 1
+        ? projectNames[0]
+        : `${projectNames[0]} +${projectNames.length - 1} more`;
+
+    return {
+      id: item.id,
+      projects: projectKeys,
+      cat,
+      title: item.title || "Untitled",
+      dek: item.summary || "",
+      tags: item.tags || [],
+      source: item.url ? (() => { try { return new URL(item.url).hostname.replace("www.", ""); } catch { return ""; } })() : "",
+      days: Math.floor((Date.now() - new Date(item.created_at).getTime()) / 86400000),
+      aspect: "tall",
+      imageUrl: item.type === "image" ? item.url : (item.type === "video" ? (item.poster_url || null) : null),
+      videoUrl: item.type === "video" ? item.url : null,
+      posterUrl: item.poster_url || null,
+      sourceUrl: item.source_url || item.url,
+      grad: ["#2A2438", "#C86A3E"],
+      vibe: (item.tags || []).join(" ") + " " + (item.summary || ""),
+      type: item.type,
+      content: item.content,
+    };
+  });
 
   const tags = [...new Set(saves.flatMap((s) => s.tags))].sort();
-
   const SIGNATURE = {
     line: "Your taste is synthesized from your saved library.",
     motifs: tags.slice(0, 6),
@@ -76,15 +93,27 @@ export async function fetchSignature(user, saves) {
   }
 }
 
-
 export async function deleteItem(id) {
   const { error } = await supabase.from("items").delete().eq("id", id);
   if (error) throw error;
   return true;
 }
 
-export async function updateItemProject(id, projectId) {
-  const { error } = await supabase.from("items").update({ project_id: projectId }).eq("id", id);
+export async function addItemToProject(itemId, projectId, userId) {
+  const { error } = await supabase.from("item_projects").insert({
+    item_id: itemId,
+    project_id: projectId,
+    user_id: userId,
+  });
+  if (error) throw error;
+  return true;
+}
+
+export async function removeItemFromProject(itemId, projectId) {
+  const { error } = await supabase.from("item_projects")
+    .delete()
+    .eq("item_id", itemId)
+    .eq("project_id", projectId);
   if (error) throw error;
   return true;
 }

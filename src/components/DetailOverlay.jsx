@@ -17,7 +17,7 @@ export default function DetailOverlay({
   const related = all
     .filter((x) => x.id !== save.id && x.tags.some((t) => save.tags.includes(t)))
     .slice(0, 3);
-  const proj = (projects || []).find((p) => p.key === save.project);
+  const proj = (projects || []).find((p) => p.key === save.projects[0]);
 
   return (
     <div className="mb-overlay" onClick={onClose}>
@@ -56,7 +56,7 @@ export default function DetailOverlay({
           <dl className="mb-modal-meta">
             <dt>Saved</dt><dd>{save.days} days ago</dd>
             <dt>Source</dt><dd>{save.sourceUrl ? <a href={save.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)" }}>{save.source} ↗</a> : save.source}</dd>
-            <dt>Project</dt><dd>{proj ? proj.name : "Uncategorized"}</dd>
+            <dt>Project</dt><dd>{save.cat}</dd>
             <dt>Tags</dt><dd>{save.tags.join(" · ")}</dd>
           </dl>
 
@@ -84,7 +84,7 @@ export default function DetailOverlay({
                       style={{
                         display: "flex", alignItems: "center", gap: "8px", width: "100%",
                         padding: "8px 10px", borderRadius: "7px", textAlign: "left",
-                        background: save.project === p.key ? "var(--hover)" : "transparent",
+                        background: save.projects.includes(p.key) ? "var(--hover)" : "transparent",
                         color: "var(--ink)", fontSize: "13px",
                       }}
                     >

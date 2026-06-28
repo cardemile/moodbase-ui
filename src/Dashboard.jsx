@@ -8,7 +8,7 @@ import Toolbar from "./components/Toolbar.jsx";
 import Grid from "./components/Grid.jsx";
 import ChatPanel from "./components/ChatPanel.jsx";
 import DetailOverlay from "./components/DetailOverlay.jsx";
-import { deleteItem, updateItemProject } from "./data.js";
+import { deleteItem, addItemToProject, removeItemFromProject } from "./data.js";
 
 const SEARCH_SUGGESTIONS = [
   "warm analog packaging", "nostalgic film grain", "golden hour interiors",
@@ -36,7 +36,7 @@ export default function Dashboard({ projects, tags, saves, signature, userId }) 
 
   const counts = useMemo(() => {
     const byProj = {};
-    localSaves.forEach((s) => { byProj[s.project] = (byProj[s.project] || 0) + 1; });
+    localSaves.forEach((s) => { s.projects.forEach((p) => { byProj[p] = (byProj[p] || 0) + 1; }); });
     return { total: localSaves.length, byProj };
   }, [localSaves]);
 
@@ -48,7 +48,7 @@ export default function Dashboard({ projects, tags, saves, signature, userId }) 
   // PRODUCTION: replace the `if (query.trim())` block with your pgvector query.
   const { list, matchIds, filtered, shown } = useMemo(() => {
     let l = localSaves.filter((s) =>
-      (activeProj === "all" || s.project === activeProj) &&
+      (activeProj === "all" || s.projects.includes(activeProj)) &&
       (activeTags.length === 0 || s.tags.some((tg) => activeTags.includes(tg))));
 
     const cmp = {
@@ -137,14 +137,26 @@ export default function Dashboard({ projects, tags, saves, signature, userId }) 
     }
   }
   async function handleMoveProject(save, projectKey) {
-    const newProjectId = projectKey === "uncat" ? null : projectKey;
+    if (projectKey === "uncat") return; // not a real project, nothing to toggle
+    const alreadyIn = save.projects.includes(projectKey);
     try {
-      await updateItemProject(save.id, newProjectId);
-      setLocalSaves((prev) => prev.map((x) => x.id === save.id ? { ...x, project: projectKey } : x));
-      setDetail((prev) => prev && prev.id === save.id ? { ...prev, project: projectKey } : prev);
+      if (alreadyIn) {
+        await removeItemFromProject(save.id, projectKey);
+      } else {
+        await addItemToProject(save.id, projectKey, userId);
+      }
+      const updateProjects = (oldProjects) => {
+        const withoutUncat = oldProjects.filter((p) => p !== "uncat");
+        const next = alreadyIn
+          ? withoutUncat.filter((p) => p !== projectKey)
+          : [...withoutUncat, projectKey];
+        return next.length ? next : ["uncat"];
+      };
+      setLocalSaves((prev) => prev.map((x) => x.id === save.id ? { ...x, projects: updateProjects(x.projects) } : x));
+      setDetail((prev) => prev && prev.id === save.id ? { ...prev, projects: updateProjects(prev.projects) } : prev);
     } catch (err) {
       console.error("move project failed", err);
-      alert("Could not move this save. Try again.");
+      alert("Could not update this save's project. Try again.");
     }
   }
   // Dock the chat as a real grid column on wide screens; overlay on narrow.

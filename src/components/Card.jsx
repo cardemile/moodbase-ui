@@ -60,7 +60,7 @@ function Card({ s, dim, match, projects, onOpen, onSimilar }) {
       <div className="mb-card-body">
         <div className="mb-card-kick">
           <span className="mb-dot"
-            style={{ background: catDot(s.project, projects), boxShadow: "none", width: 7, height: 7 }} />
+            style={{ background: catDot(s.projects[0], projects), boxShadow: "none", width: 7, height: 7 }} />
           <span className="kicker">{s.cat}</span>
           {s.featured && <span className="mb-card-featured">★ Featured</span>}
         </div>
