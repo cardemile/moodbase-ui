@@ -3,6 +3,18 @@ const SUPABASE_URL = "https://qxgsaqvulfafqqxrkyob.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4Z3NhcXZ1bGZhZnFxeHJreW9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NDY5MzUsImV4cCI6MjA5MTIyMjkzNX0.ScmKdK5dI8xBv-35r0Zx0GwqyCVWT9MsqnIKlM7GGWg";
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Given an array of project keys (uuids, or "uncat") and the full projects list,
+// compute the display label for a save's project assignment.
+export function computeCat(projectKeys, projectsRaw) {
+  const realKeys = (projectKeys || []).filter((k) => k !== "uncat");
+  const names = realKeys
+    .map((pid) => projectsRaw?.find((p) => p.id === pid)?.name)
+    .filter(Boolean);
+  if (names.length === 0) return "Uncategorized";
+  if (names.length === 1) return names[0];
+  return `${names[0]} +${names.length - 1} more`;
+}
+
 export async function fetchData(user) {
   const [{ data: itemsRaw }, { data: projectsRaw }, { data: linksRaw }] = await Promise.all([
     supabase.from("items").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
@@ -29,14 +41,7 @@ export async function fetchData(user) {
   const saves = (itemsRaw || []).map((item) => {
     const projectIds = linksByItem[item.id] || [];
     const projectKeys = projectIds.length ? projectIds : ["uncat"];
-    const projectNames = projectIds
-      .map((pid) => projectsRaw?.find((p) => p.id === pid)?.name)
-      .filter(Boolean);
-    const cat = projectNames.length === 0
-      ? "Uncategorized"
-      : projectNames.length === 1
-        ? projectNames[0]
-        : `${projectNames[0]} +${projectNames.length - 1} more`;
+    const cat = computeCat(projectKeys, projectsRaw);
 
     return {
       id: item.id,

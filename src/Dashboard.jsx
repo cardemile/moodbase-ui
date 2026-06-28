@@ -18,6 +18,16 @@ const SEARCH_SUGGESTIONS = [
 const tokenize = (str) =>
   (str || "").toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2);
 
+function computeCatFromProjects(projectKeys, projects) {
+  const realKeys = (projectKeys || []).filter((k) => k !== "uncat");
+  const names = realKeys
+    .map((key) => (projects || []).find((p) => p.key === key)?.name)
+    .filter(Boolean);
+  if (names.length === 0) return "Uncategorized";
+  if (names.length === 1) return names[0];
+  return `${names[0]} +${names.length - 1} more`;
+}
+
 export default function Dashboard({ projects, tags, saves, signature, userId }) {
   const [localSaves, setLocalSaves] = useState(saves);
   const [query, setQuery] = useState("");
@@ -152,8 +162,16 @@ export default function Dashboard({ projects, tags, saves, signature, userId }) 
           : [...withoutUncat, projectKey];
         return next.length ? next : ["uncat"];
       };
-      setLocalSaves((prev) => prev.map((x) => x.id === save.id ? { ...x, projects: updateProjects(x.projects) } : x));
-      setDetail((prev) => prev && prev.id === save.id ? { ...prev, projects: updateProjects(prev.projects) } : prev);
+      setLocalSaves((prev) => prev.map((x) => {
+        if (x.id !== save.id) return x;
+        const newProjects = updateProjects(x.projects);
+        return { ...x, projects: newProjects, cat: computeCatFromProjects(newProjects, projects) };
+      }));
+      setDetail((prev) => {
+        if (!prev || prev.id !== save.id) return prev;
+        const newProjects = updateProjects(prev.projects);
+        return { ...prev, projects: newProjects, cat: computeCatFromProjects(newProjects, projects) };
+      });
     } catch (err) {
       console.error("move project failed", err);
       alert("Could not update this save's project. Try again.");
